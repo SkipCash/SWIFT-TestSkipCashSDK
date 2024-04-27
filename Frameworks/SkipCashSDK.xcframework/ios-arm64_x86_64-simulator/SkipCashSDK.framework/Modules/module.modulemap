@@ -1,0 +1,11 @@
+framework module SkipCashSDK {
+  umbrella header "SkipCashSDK.h"
+  export *
+
+  module * { export * }
+}
+
+module SkipCashSDK.Swift {
+  header "SkipCashSDK-Swift.h"
+  requires objc
+}
