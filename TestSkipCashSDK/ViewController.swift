@@ -13,7 +13,7 @@ import SkipCashSDK
 class ViewController: UIViewController, ApplePayReponseDelegate {
     
     func applePayResponseData(paymentId: String, isSuccess: Bool, token: String, returnCode: Int, errorMessage: String) {
-        
+        print(paymentId)
         if (isSuccess) {
             self.showAlert(with: "Success", message: "Transaction was successful! To process a refund, please provide a screenshot of this alert with the payment ID '\(paymentId)' to support@skipcash.com.")
         }else{
@@ -86,7 +86,7 @@ class ViewController: UIViewController, ApplePayReponseDelegate {
         
         completionHandler = completion
         
-        let ticket = PKPaymentSummaryItem(label: "Festival Entry", amount: NSDecimalNumber(string: "0.88"), type: .final)
+        let ticket = PKPaymentSummaryItem(label: "Stadium Ticket", amount: NSDecimalNumber(string: "0.88"), type: .final)
         let tax = PKPaymentSummaryItem(label: "Tax", amount: NSDecimalNumber(string: "0.12"), type: .final)
         let total = PKPaymentSummaryItem(label: "Total", amount: NSDecimalNumber(string: "1.00"), type: .final)
         paymentSummaryItems = [ticket, tax, total]
@@ -94,7 +94,7 @@ class ViewController: UIViewController, ApplePayReponseDelegate {
         // Create a payment request.
         let paymentRequest = PKPaymentRequest()
         paymentRequest.paymentSummaryItems = paymentSummaryItems
-        paymentRequest.merchantIdentifier = "merchant.com.skipcash.appay"
+        paymentRequest.merchantIdentifier = "YOUR MERCHANT IDENTIFIER"
         paymentRequest.merchantCapabilities = .threeDSecure
         paymentRequest.countryCode = "QA"
         paymentRequest.currencyCode = "QAR"
@@ -144,13 +144,10 @@ class ViewController: UIViewController, ApplePayReponseDelegate {
 extension ViewController: PKPaymentAuthorizationControllerDelegate {
     
     func paymentAuthorizationController(_ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment, handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
-        
         // Perform basic validation on the provided contact information.
         let errors = [Error]()
         let status = PKPaymentAuthorizationStatus.success
-        
         var sign = ""
-        
         do{
             if let jsonResponse = try JSONSerialization.jsonObject(with: payment.token.paymentData, options: []) as? [String: Any]{
                 sign = String(decoding: payment.token.paymentData, as: UTF8.self)
@@ -164,17 +161,15 @@ extension ViewController: PKPaymentAuthorizationControllerDelegate {
         
         let podBundle = Bundle(for: SetupVC.self)
         let storyboard = UIStoryboard(name: "main", bundle: podBundle)
-       
         /*
             Create a customer_data object and pass the necessary data (including the amount) to it,
             from where you initiate the payment, By passing it to the SetupVC
          */
-        
         let customer_data = CustomerPaymentData(phone: "+97492333331", email:"example@some.com", firstName:"someone", lastName: "someone", amount: "1.00")
         
         if let vc = storyboard.instantiateViewController(withIdentifier: "SetupVC") as? SetupVC{
             vc.paymentData = customer_data
-            vc.appBackendServerEndPoint = "https://paymentsimulation-4f296ff7747c.herokuapp.com/api/createPaymentLink/"
+            vc.appBackendServerEndPoint = ""
 //            vc.authorizationHeader = "" // add authorization header if BE server endpoint requires
             vc.delegate = self
             vc.paymentToken = sign
@@ -184,7 +179,6 @@ extension ViewController: PKPaymentAuthorizationControllerDelegate {
         }
         // Send the payment token to your server or payment provider to process here.
         // Once processed, return an appropriate status in the completion handler (success, failure, and so on).
-        
         self.paymentStatus = status
         completion(PKPaymentAuthorizationResult(status: status, errors: errors))
     }
